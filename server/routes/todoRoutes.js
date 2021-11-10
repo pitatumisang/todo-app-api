@@ -3,14 +3,14 @@ const express = require('express');
 const router = express.Router();
 
 const {
-    getAllTodos,
-    getSingleTodo,
-    createTodo,
-    updateTodo,
-    deleteTodo,
-} = require('../controllers/todos.controller');
+  getAllTodo,
+  getSingleTodo,
+  createTodo,
+  updateTodo,
+  deleteTodo,
+} = require('../controllers/todoController');
 
-router.get('/', getAllTodos);
+router.get('/', getAllTodo);
 router.get('/:id', getSingleTodo);
 router.post('/', createTodo);
 router.patch('/:id', updateTodo);

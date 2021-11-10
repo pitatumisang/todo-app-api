@@ -1,39 +1,59 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const todos = require('./routes/todos');
-const mongoose = require('mongoose');
+require('express-async-errors');
 const cors = require('cors');
+const connectDb = require('./configs/db');
+
+const { StatusCodes } = require('http-status-codes');
+const errorHandler = require('./middleware/errorHandlerMiddleware');
+const authorizeUser = require('./middleware/authMiddleware');
+
+//* Routes imports
+const userRoutes = require('./routes/userRoutes');
+const todoRoutes = require('./routes/todoRoutes');
+
+//* colors for console log
+const colors = require('colors');
 
 const app = express();
 
 dotenv.config();
+
+//*MIDDLEWARE
 app.use(express.json());
-app.use(cors({ origin: '*' }));
+app.use(cors());
 
-// ROUTES
-app.use('/api/v1/todos', todos);
+//* ROUTES
+app.use('/api/users', userRoutes);
+app.use('/api/todo', authorizeUser, todoRoutes);
 
+//* ERROR HANDLING MIDDLEWARE
 app.use('*', (req, res) => {
-    res.status(404).json({ success: false, msg: 'URL path not found' });
+  res
+    .status(StatusCodes.NOT_FOUND)
+    .json({ success: false, msg: 'URL path not found' });
 });
 
-const port = process.env.PORT || 5000;
+app.use(errorHandler);
+
+const port = process.env.PORT || 3000;
 
 // * CONNECTING TO DB USING mongoose
-mongoose
-    .connect(process.env.MONGO_URI)
-    .then(() => {
-        // * STARTING A SERVER
-        console.log('DB connected successfully!');
-        app.listen(port, (err) => {
-            if (err) {
-                console.log(err);
-                return;
-            }
-
-            console.log(`Server running on http://localhost:${port}`);
-        });
-    })
-    .catch((err) => {
-        res.status(500).json({ msg: err });
+connectDb()
+  .then(() => {
+    // * STARTING A SERVER
+    console.log('DB connected successfully!'.underline.bold.yellow);
+    app.listen(port, (err) => {
+      if (err) {
+        console.log(err);
+        return;
+      }
+      console.log(
+        `Server running in ${process.env.NODE_ENV} on port ${port}`.underline
+          .bold.cyan
+      );
     });
+  })
+  .catch((err) => {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: err });
+  });

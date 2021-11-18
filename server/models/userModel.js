@@ -30,12 +30,12 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-//* Compare passwords for login method
+// Compare passwords for login method
 UserSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-//* Generate JWT Token
+// Generate JWT Token
 UserSchema.methods.generateJwtToken = async function () {
   return await jwt.sign(
     { userId: this._id.toString() },
@@ -44,7 +44,7 @@ UserSchema.methods.generateJwtToken = async function () {
   );
 };
 
-//* Hash password before saving to database
+// Hash password before saving to database
 UserSchema.pre('save', async function () {
   if (!this.isModified('password')) {
     next();
